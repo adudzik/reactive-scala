@@ -1,30 +1,30 @@
 import akka.actor.{Actor, ActorRef}
 import akka.event.LoggingReceive
 
-sealed trait Command
+sealed trait CartCommand
 
-case class AddItem(id: String) extends Command
+case class AddItem(id: String) extends CartCommand
 
-case class RemoveItem(id: String) extends Command
+case class RemoveItem(id: String) extends CartCommand
 
-case class StartCheckout() extends Command
+case class StartCheckout() extends CartCommand
 
-case class CancelCheckout() extends Command
+case class CancelCheckout() extends CartCommand
 
-case class CloseCheckout() extends Command
+case class CloseCheckout() extends CartCommand
 
 
-sealed trait Event
+sealed trait CartEvent
 
-case class ItemAdded(id: String) extends Event
+case class ItemAdded(id: String) extends CartEvent
 
-case class ItemRemoved(id: String) extends Event
+case class ItemRemoved(id: String) extends CartEvent
 
-case class CheckoutStarted() extends Event
+case class CheckoutStarted() extends CartEvent
 
-case class CheckoutCanceled() extends Event
+case class CheckoutCanceled() extends CartEvent
 
-case class CheckoutClosed() extends Event
+case class CheckoutClosed() extends CartEvent
 
 
 case class CartItems(var items: Set[String]) {
@@ -49,7 +49,7 @@ class CartAggregator extends Actor {
       //sender ! ItemAdded(id)
       context become nonEmptyStage
     case _ =>
-      println("Unsupported operation on Empty stage!")
+      println("Unsupported operation on Empty state!")
   }
 
   def nonEmptyStage: Receive = LoggingReceive {
@@ -67,7 +67,7 @@ class CartAggregator extends Actor {
       println("Starting checkout for items:" + cartItems.items.toString())
       context become inCheckoutStage
     case _ =>
-      println("Unsupported operation on NonEmpty stage!")
+      println("Unsupported operation on NonEmpty state!")
   }
 
   def inCheckoutStage: Receive = LoggingReceive {
@@ -80,6 +80,6 @@ class CartAggregator extends Actor {
       println("Closing checkout...")
       context become emptyStage
     case _ =>
-      println("Unsupported operation on InCheckout stage!")
+      println("Unsupported operation on InCheckout state!")
   }
 }
