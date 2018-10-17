@@ -6,7 +6,7 @@ import scala.concurrent.duration.Duration
 object OnlineShopApp extends App {
   val system = ActorSystem("OnlineShop")
   val cartActor = system.actorOf(Props[CartAggregator], "cartActor")
-  val checkoutActor = system.actorOf(Props[CheckoutAggregator], "checkoutActor")
+  val checkoutActor = system.actorOf(Props(new CheckoutAggregator(CartItems(Set("a")))), "checkoutActor")
 
   cartActor ! AddItem("a")
   cartActor ! RemoveItem("a")
@@ -16,6 +16,7 @@ object OnlineShopApp extends App {
   cartActor ! CloseCheckout
   cartActor ! RemoveItem("b")
 
+  checkoutActor ! StartCheckout
   checkoutActor ! SelectDeliveryType
   checkoutActor ! ReceivePayment
   checkoutActor ! SelectPayment
