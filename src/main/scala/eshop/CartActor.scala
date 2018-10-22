@@ -1,32 +1,38 @@
+package eshop
+
 import akka.actor.{Actor, Timers}
 import akka.event.LoggingReceive
+
 import scala.concurrent.duration._
 
-sealed trait CartCommand
+object Cart {
 
-case class AddItem(id: String) extends CartCommand
+  sealed trait CartCommand
 
-case class RemoveItem(id: String) extends CartCommand
+  case class AddItem(id: String) extends CartCommand
 
-case class StartCheckout() extends CartCommand
+  case class RemoveItem(id: String) extends CartCommand
 
-case class CancelCheckout() extends CartCommand
+  case class StartCheckout() extends CartCommand
 
-case class CloseCheckout() extends CartCommand
+  case class CancelCheckout() extends CartCommand
+
+  case class CloseCheckout() extends CartCommand
 
 
-sealed trait CartEvent
+  sealed trait CartEvent
 
-case class ItemAdded(id: String) extends CartEvent
+  case class ItemAdded(id: String) extends CartEvent
 
-case class ItemRemoved(id: String) extends CartEvent
+  case class ItemRemoved(id: String) extends CartEvent
 
-case class CheckoutStarted() extends CartEvent
+  case class CheckoutStarted() extends CartEvent
 
-case class CheckoutCanceled() extends CartEvent
+  case class CheckoutCanceled() extends CartEvent
 
-case class CheckoutClosed() extends CartEvent
+  case class CheckoutClosed() extends CartEvent
 
+}
 
 case object TimeoutKey
 
@@ -45,6 +51,7 @@ case class CartItems(var items: Set[String]) {
 }
 
 class CartAggregator extends Actor with Timers {
+  import Cart._
 
   val cartItems = CartItems(Set())
 
@@ -54,7 +61,6 @@ class CartAggregator extends Actor with Timers {
     case AddItem(id) =>
       cartItems.addItem(id)
       println("Added item \"" + id + "\" to cart: " + cartItems.items.toString())
-      //sender ! ItemAdded(id)
       timers.startSingleTimer(TimeoutKey, CartTimeout, 2.second)
       context become nonEmptyStage
     case _ =>
@@ -65,14 +71,11 @@ class CartAggregator extends Actor with Timers {
     case AddItem(id) =>
       cartItems.addItem(id)
       println("Added item \"" + id + "\" to cart: " + cartItems.items.toString())
-    //sender ! ItemAdded(id)
     case RemoveItem(id) =>
       cartItems.removeItem(id)
       println("Removed item \"" + id + "\" from cart: " + cartItems.items.toString())
-      //sender ! ItemRemoved(id)
       if (cartItems.isEmpty) context become emptyStage
     case StartCheckout =>
-      //sender ! CheckoutStarted
       println("Starting checkout for items:" + cartItems.items.toString())
       context become inCheckoutStage
     case CartTimeout =>
@@ -85,11 +88,9 @@ class CartAggregator extends Actor with Timers {
 
   def inCheckoutStage: Receive = LoggingReceive {
     case CancelCheckout =>
-      //sender ! CheckoutCanceled
       println("Canceling checkout...")
       context become nonEmptyStage
     case CloseCheckout =>
-      //sender ! CheckoutClosed
       println("Closing checkout...")
       context become emptyStage
     case _ =>
