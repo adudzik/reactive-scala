@@ -3,7 +3,6 @@ package actors
 import akka.actor.{Actor, Timers}
 import akka.event.LoggingReceive
 import actors.Cart.StartCheckout
-import actors.CartItems
 
 import scala.concurrent.duration._
 
@@ -18,17 +17,6 @@ object Checkout {
   case object ReceivePayment extends CheckoutCommand
 
   case object Cancel extends CheckoutCommand
-
-
-  sealed trait CheckoutEvent
-
-  case object DeliveryTypeSelected extends CheckoutEvent
-
-  case object PaymentSelected extends CheckoutEvent
-
-  case object PaymentReceived extends CheckoutEvent
-
-  case object Cancelled extends CheckoutEvent
 
 }
 
@@ -46,11 +34,9 @@ class CheckoutAggregator extends Actor with Timers {
   override def receive: Receive = LoggingReceive {
     case StartCheckout(items) =>
       cart = items
-      if (!cart.isEmpty) {
-        println("Checkout was started...")
-        timers.startSingleTimer(TimeoutKey, CheckoutTimeout, 2.second)
-        context become selectingDelivery
-      }
+      println("Checkout was started...")
+      timers.startSingleTimer(TimeoutKey, CheckoutTimeout, 2.second)
+      context become selectingDelivery
   }
 
   def selectingDelivery: Receive = LoggingReceive {
@@ -72,6 +58,9 @@ class CheckoutAggregator extends Actor with Timers {
       println("Payment method selected")
       timers.startSingleTimer(TimeoutKey, PaymentTimeout, 2.second)
       context become processingPayment
+    case CheckoutTimeout =>
+      println("Too long in StartCheckout!")
+      context stop self
     case Cancel =>
       println("Cancelled!")
       context stop self

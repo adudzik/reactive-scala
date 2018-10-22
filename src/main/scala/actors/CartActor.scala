@@ -13,24 +13,13 @@ object Cart {
 
   case class RemoveItem(id: String) extends CartCommand
 
-  case class StartCheckout(items: CartItems) extends CartCommand
+  case class StartCheckout(items: CartItems) extends CartCommand {
+    require(!items.isEmpty)
+  }
 
   case object CancelCheckout extends CartCommand
 
   case object CloseCheckout extends CartCommand
-
-
-  sealed trait CartEvent
-
-  case class ItemAdded(id: String) extends CartEvent
-
-  case class ItemRemoved(id: String) extends CartEvent
-
-  case object CheckoutStarted extends CartEvent
-
-  case object CheckoutCanceled extends CartEvent
-
-  case object CheckoutClosed extends CartEvent
 
 }
 

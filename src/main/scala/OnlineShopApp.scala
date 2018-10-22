@@ -14,6 +14,9 @@ object OnlineShopApp extends App {
   val checkoutActor = system.actorOf(Props[CheckoutAggregator], "checkoutActor")
 
   cartActor ! AddItem("a")
+  Thread.sleep(2100)
+
+  cartActor ! AddItem("a")
   cartActor ! RemoveItem("a")
   cartActor ! StartCheckout
   cartActor ! AddItem("b")
