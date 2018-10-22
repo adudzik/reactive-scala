@@ -1,4 +1,4 @@
-package eshop
+package actors
 
 import akka.actor.{Actor, Timers}
 import akka.event.LoggingReceive
@@ -13,11 +13,11 @@ object Cart {
 
   case class RemoveItem(id: String) extends CartCommand
 
-  case class StartCheckout() extends CartCommand
+  case class StartCheckout(items: CartItems) extends CartCommand
 
-  case class CancelCheckout() extends CartCommand
+  case object CancelCheckout extends CartCommand
 
-  case class CloseCheckout() extends CartCommand
+  case object CloseCheckout extends CartCommand
 
 
   sealed trait CartEvent
@@ -26,11 +26,11 @@ object Cart {
 
   case class ItemRemoved(id: String) extends CartEvent
 
-  case class CheckoutStarted() extends CartEvent
+  case object CheckoutStarted extends CartEvent
 
-  case class CheckoutCanceled() extends CartEvent
+  case object CheckoutCanceled extends CartEvent
 
-  case class CheckoutClosed() extends CartEvent
+  case object CheckoutClosed extends CartEvent
 
 }
 
@@ -51,6 +51,7 @@ case class CartItems(var items: Set[String]) {
 }
 
 class CartAggregator extends Actor with Timers {
+
   import Cart._
 
   val cartItems = CartItems(Set())

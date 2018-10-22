@@ -1,8 +1,9 @@
-package eshop
+package actors
 
 import akka.actor.{Actor, Timers}
 import akka.event.LoggingReceive
-import eshop.Cart.StartCheckout
+import actors.Cart.StartCheckout
+import actors.CartItems
 
 import scala.concurrent.duration._
 
@@ -10,24 +11,24 @@ object Checkout {
 
   sealed trait CheckoutCommand
 
-  case class SelectDeliveryType() extends CheckoutCommand
+  case object SelectDeliveryType extends CheckoutCommand
 
-  case class SelectPayment() extends CheckoutCommand
+  case object SelectPayment extends CheckoutCommand
 
-  case class ReceivePayment() extends CheckoutCommand
+  case object ReceivePayment extends CheckoutCommand
 
-  case class Cancel() extends CheckoutCommand
+  case object Cancel extends CheckoutCommand
 
 
   sealed trait CheckoutEvent
 
-  case class DeliveryTypeSelected() extends CheckoutEvent
+  case object DeliveryTypeSelected extends CheckoutEvent
 
-  case class PaymentSelected() extends CheckoutEvent
+  case object PaymentSelected extends CheckoutEvent
 
-  case class PaymentReceived() extends CheckoutEvent
+  case object PaymentReceived extends CheckoutEvent
 
-  case class Cancelled() extends CheckoutEvent
+  case object Cancelled extends CheckoutEvent
 
 }
 
@@ -36,11 +37,15 @@ case object CheckoutTimeout
 case object PaymentTimeout
 
 
-class CheckoutAggregator(cart: CartItems) extends Actor with Timers {
+class CheckoutAggregator extends Actor with Timers {
+
   import Checkout._
 
+  private var cart = CartItems(Set())
+
   override def receive: Receive = LoggingReceive {
-    case StartCheckout =>
+    case StartCheckout(items) =>
+      cart = items
       if (!cart.isEmpty) {
         println("Checkout was started...")
         timers.startSingleTimer(TimeoutKey, CheckoutTimeout, 2.second)

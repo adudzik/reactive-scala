@@ -1,16 +1,17 @@
 import akka.actor.{ActorSystem, Props}
-import eshop.{Cart, CartAggregator, CartItems, Checkout, CheckoutAggregator}
+import actors.{Cart, CartAggregator, CartItems, Checkout, CheckoutAggregator}
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
 object OnlineShopApp extends App {
+
   import Cart._
   import Checkout._
 
   val system = ActorSystem("OnlineShop")
   val cartActor = system.actorOf(Props[CartAggregator], "cartActor")
-  val checkoutActor = system.actorOf(Props(new CheckoutAggregator(CartItems(Set("a")))), "checkoutActor")
+  val checkoutActor = system.actorOf(Props[CheckoutAggregator], "checkoutActor")
 
   cartActor ! AddItem("a")
   cartActor ! RemoveItem("a")
@@ -22,7 +23,7 @@ object OnlineShopApp extends App {
 
   Thread.sleep(200)
 
-  checkoutActor ! StartCheckout
+  checkoutActor ! StartCheckout(CartItems(Set("a")))
   checkoutActor ! SelectDeliveryType
   checkoutActor ! ReceivePayment
   checkoutActor ! SelectPayment
