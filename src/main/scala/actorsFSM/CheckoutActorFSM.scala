@@ -55,27 +55,27 @@ class CheckoutAggregatorFSM extends FSM[CheckoutState, CheckoutData] {
       goto(SelectingDelivery) using Active(items)
   }
 
-  when(SelectingDelivery, stateTimeout = 2 seconds) {
+  when(SelectingDelivery, stateTimeout = 1.second) {
     case Event(DeliveryTypeSelected, Active(_)) =>
       println("Delivery type selected")
       goto(SelectingPaymentMethod) using Delivering
   }
 
-  when(SelectingPaymentMethod, stateTimeout = 2 seconds) {
+  when(SelectingPaymentMethod, stateTimeout = 1.second) {
     case Event(PaymentSelected, Delivering) =>
       println("Payment method selected")
       goto(ProcessingPayment) using Paying
   }
 
-  when(ProcessingPayment, stateTimeout = 2 seconds) {
+  when(ProcessingPayment, stateTimeout = 1.second) {
     case Event(PaymentReceived, Paying) =>
       println("Closing checkout process...")
       stop
   }
 
   whenUnhandled {
-    case Event(StateTimeout, _) =>
-      println("Too long in state!")
+    case Event(StateTimeout, s) =>
+      println("Too long in state: %s!".format(s))
       stop
     case Event(Cancelled, _) =>
       println("Cancelled!")

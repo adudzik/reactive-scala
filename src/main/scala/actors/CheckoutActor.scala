@@ -35,7 +35,7 @@ class CheckoutAggregator extends Actor with Timers {
     case StartCheckout(items) =>
       cart = items
       println("Checkout was started...")
-      timers.startSingleTimer(TimeoutKey, CheckoutTimeout, 2.second)
+      timers.startSingleTimer(TimeoutKey, CheckoutTimeout, 1.second)
       context become selectingDelivery
   }
 
@@ -56,10 +56,11 @@ class CheckoutAggregator extends Actor with Timers {
   def selectingPaymentMethod: Receive = LoggingReceive {
     case SelectPayment =>
       println("Payment method selected")
-      timers.startSingleTimer(TimeoutKey, PaymentTimeout, 2.second)
+      timers.cancel(TimeoutKey)
+      timers.startSingleTimer(TimeoutKey, PaymentTimeout, 1.second)
       context become processingPayment
     case CheckoutTimeout =>
-      println("Too long in StartCheckout!")
+      println("Too long in SelectingPayment!")
       context stop self
     case Cancel =>
       println("Cancelled!")

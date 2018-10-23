@@ -35,6 +35,7 @@ object CartFSM {
   case object CheckoutCanceled extends CartEvent
 
   case object CheckoutClosed extends CartEvent
+
 }
 
 class CartAggregatorFSM extends FSM[CartState, CartData] {
@@ -50,7 +51,7 @@ class CartAggregatorFSM extends FSM[CartState, CartData] {
       goto(NonEmpty) using Buying(items)
   }
 
-  when(NonEmpty, stateTimeout = 2 second) {
+  when(NonEmpty, stateTimeout = 1.second) {
     case Event(ItemAdded(id), Buying(items)) =>
       items.addItem(id)
       println("Added item \"" + id + "\" to cart: " + items.toString)
@@ -76,7 +77,7 @@ class CartAggregatorFSM extends FSM[CartState, CartData] {
   whenUnhandled {
     case Event(StateTimeout, Buying(items)) =>
       items.removeAll()
-      println("Too long in state!")
+      println("Too long in state: %s!".format(stateName))
       goto(Empty) using Buying(items)
     case Event(e, s) =>
       println("Unsupported request %s on %s/%s state!".format(e, stateName, s))

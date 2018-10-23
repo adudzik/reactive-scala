@@ -51,10 +51,10 @@ class CartAggregator extends Actor with Timers {
     case AddItem(id) =>
       cartItems.addItem(id)
       println("Added item \"" + id + "\" to cart: " + cartItems.items.toString())
-      timers.startSingleTimer(TimeoutKey, CartTimeout, 2.second)
+      timers.startSingleTimer(TimeoutKey, CartTimeout, 1.second)
       context become nonEmptyStage
-    case _ =>
-      println("Unsupported operation on Empty state!")
+    case s =>
+      println("Unsupported operation: %s on Empty state!".format(s))
   }
 
   def nonEmptyStage: Receive = LoggingReceive {
@@ -63,10 +63,12 @@ class CartAggregator extends Actor with Timers {
       println("Added item \"" + id + "\" to cart: " + cartItems.items.toString())
     case RemoveItem(id) =>
       cartItems.removeItem(id)
+      timers.cancel(TimeoutKey)
       println("Removed item \"" + id + "\" from cart: " + cartItems.items.toString())
       if (cartItems.isEmpty) context become emptyStage
     case StartCheckout =>
       println("Starting checkout for items:" + cartItems.items.toString())
+      timers.cancel(TimeoutKey)
       context become inCheckoutStage
     case CartTimeout =>
       println("Too long in NonEmpty state!")
