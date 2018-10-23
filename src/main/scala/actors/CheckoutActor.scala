@@ -72,7 +72,7 @@ class CheckoutAggregator extends Actor with Timers {
   def processingPayment: Receive = LoggingReceive {
     case ReceivePayment =>
       println("Closing checkout process...")
-      context.system.terminate()
+      context stop self
     case PaymentTimeout =>
       println("Too long in ProcessingPayment!")
       context stop self

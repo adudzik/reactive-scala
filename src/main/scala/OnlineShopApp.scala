@@ -29,6 +29,15 @@ object OnlineShopApp extends App {
 
   Thread.sleep(200)
 
+  println("---------------------CHECKOUT-----------------------")
+  checkoutActor ! StartCheckout(CartItems(Set("a")))
+  checkoutActor ! SelectDeliveryType
+  checkoutActor ! ReceivePayment
+  checkoutActor ! SelectPayment
+  checkoutActor ! ReceivePayment
+
+  Thread.sleep(500)
+
   println("-----------------Checkout timeout-----------------------")
   checkoutActor1 ! StartCheckout(CartItems(Set("a")))
   checkoutActor1 ! SelectDeliveryType
@@ -40,12 +49,7 @@ object OnlineShopApp extends App {
   checkoutActor2 ! SelectPayment
   Thread.sleep(1100)
 
-  println("---------------------CHECKOUT-----------------------")
-  checkoutActor ! StartCheckout(CartItems(Set("a")))
-  checkoutActor ! SelectDeliveryType
-  checkoutActor ! ReceivePayment
-  checkoutActor ! SelectPayment
-  checkoutActor ! ReceivePayment
+  system.terminate()
 
   Await.result(system.whenTerminated, Duration.Inf)
 }
